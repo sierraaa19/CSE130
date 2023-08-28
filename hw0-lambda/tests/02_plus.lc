@@ -1,0 +1,60 @@
+-------------------------------------------------------------------------------
+-- DO NOT MODIFY THIS SEGMENT
+-------------------------------------------------------------------------------
+
+let ZERO  = \f x -> x
+let ONE   = \f x -> f x
+let TWO   = \f x -> f (f x)
+let THREE = \f x -> f (f (f x))
+let FOUR  = \f x -> f (f (f (f x)))
+
+let INC   = \n f x -> f (n f x)
+let ADD   = \n m -> n INC m
+let MUL   = \n m -> n (ADD m) ZERO
+
+
+-------------------------------------------------------------------------------
+-- YOU SHOULD ONLY MODIFY THE TEXT BELOW, JUST THE PARTS MARKED AS COMMENTS
+-------------------------------------------------------------------------------
+eval inc_one :
+  INC ONE
+  =d> (\n f x -> f (n f x)) ONE
+  =b> (\f x -> f (ONE f x))
+  =d> (\f x -> f ((\f x -> f x) f x))
+  =a> (\f x -> f ((\a b -> a b) f x))
+  =b> (\f x -> f ((\b -> f b) x))
+  =b> \f x -> f (f x)
+  =d> TWO
+
+eval add_zero_zero :
+  ADD ZERO ZERO
+  =d> (\n m -> n INC m) ZERO ZERO
+  =b> (\m -> ZERO INC m) ZERO
+  =d> (\m -> (\f x -> x) INC m) ZERO
+  =b> (\f x -> x) INC ZERO
+  =d> (\f x -> x) INC (\f x -> x)
+  =b> ((\x -> x) (\f x -> x))
+  =b> (\f x -> x)
+  =d> ZERO
+
+eval add_two_two :
+  ADD TWO TWO
+  =d> (\n m -> n INC m) TWO TWO
+  =b> (\m -> TWO INC m) TWO
+  =d> (\m -> (\f x -> f (f x)) INC m) TWO
+  =b> (\f x -> f (f x)) INC TWO
+  =b> (\x -> INC (INC x)) TWO
+  =b> INC (INC TWO)
+  =d> INC ((\n f x -> f (n f x)) TWO)
+  =b> INC ((\f x -> f (TWO f x)))
+  =d> INC ((\f x -> f ((\f x -> f (f x)) f x)))
+  =a> INC ((\f x -> f ((\a b -> a (a b)) f x)))
+  =b> INC ((\f x -> f ((\b -> f (f b)) x)))
+  =b> INC ((\f x -> f ((f (f x)))))
+  =d> INC THREE
+  =d> (\n f x -> f (n f x)) (\f x -> f (f (f x)))
+  =a> (\n f x -> f (n f x)) (\a b -> a (a (a b)))
+  =b> (\f x -> f ((\a b -> a (a (a b))) f x)) 
+  =b> (\f x -> f ((\b -> f (f (f b))) x)) 
+  =b> (\f x -> f ((f (f (f x)))))
+  =d> FOUR
