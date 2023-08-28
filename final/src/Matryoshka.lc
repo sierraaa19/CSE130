@@ -1,0 +1,88 @@
+
+-------------------------------------------------------------------------------
+-- DO NOT MODIFY THIS SEGMENT
+-------------------------------------------------------------------------------
+
+let TODO   = \i g n o r e -> i g n o r e
+
+let TRUE  = \x y -> x
+let FALSE = \x y -> y
+let ITE   = \b x y -> b x y
+let NOT   = \b x y -> b y x
+
+let PAIR = \x y -> (\b -> b x y)
+let FST  = \p -> p TRUE
+let SND  = \p -> p FALSE
+
+let ZERO  = \f x -> x
+let ONE   = \f x -> f x
+let TWO   = \f x -> f (f x)
+
+let INC   = \n -> \f x -> f (n f x)
+let ISZ   = \n -> n (\z -> FALSE) TRUE
+let SKIP1 = \f p -> PAIR TRUE (ITE (FST p) (f (SND p)) (SND p))
+let DEC   = \n   -> SND (n (SKIP1 INC) (PAIR FALSE ZERO))
+let SUB   = \n m -> m DEC n
+let LEQ   = \n m -> ISZ (SUB n m)
+
+let FIX   = \stp -> (\x -> stp (x x)) (\x -> stp (x x))
+
+-- | Matryoshka numbers
+let MZERO = PAIR FALSE FALSE     -- Zero
+let MSUCC = \n -> PAIR TRUE n    -- Successor
+
+let MONE   = MSUCC MZERO
+let MTWO   = MSUCC MONE
+let MTHREE = MSUCC MTWO
+
+-------------------------------------------------------------------------------
+-- Task 1: WRITE YOUR CODE HERE 
+-------------------------------------------------------------------------------
+
+-- 1.1: Is zero
+let MISZ        = \n -> ITE (FST n) FALSE TRUE
+
+-- 1.2: Decrement
+let MDEC        = \n -> ITE (MISZ n) MZERO (SND n)
+
+-- 1.3: Subtraction
+let MSUB        = \n m -> FIX (\s -> \n' m' -> ITE (MISZ m') n' (s (MDEC n') (MDEC m'))) n m
+
+-- 1.4: Convert from Church numeral
+let FROM_CHURCH = \n -> n MSUCC MZERO
+
+-------------------------------------------------------------------------------
+-- TESTS (DO NOT MODIFY THIS SEGMENT)
+-------------------------------------------------------------------------------
+
+eval isz_zero:
+  MISZ MZERO
+  =~> TRUE
+  
+eval isz_one:
+  MISZ MONE
+  =~> FALSE  
+
+eval dec_zero:
+  MDEC MZERO
+   =~> \b -> b FALSE FALSE
+
+eval dec_two:
+  MDEC MTWO
+  =~> \b -> b TRUE (\b -> b FALSE FALSE)
+
+eval sub_three_two:
+  MSUB MTHREE MTWO
+  =~> \b -> b TRUE (\b -> b FALSE FALSE)
+
+eval sub_two_three:
+  MSUB MTWO MTHREE
+  =~> \b -> b FALSE FALSE
+  
+eval from_church_zero:
+  FROM_CHURCH ZERO
+  =~> \b -> b FALSE FALSE
+  
+eval from_church_one:
+  FROM_CHURCH ONE
+  =~> \b -> b TRUE (\b -> b FALSE FALSE)
